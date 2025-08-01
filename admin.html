@@ -180,7 +180,8 @@
             await fetch("https://bee-bright-backend.onrender.com/api/update-section", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include'
             });
 
             alert("Contenido actualizado correctamente");
