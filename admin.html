@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Bee Bright</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 900px;
+        }
+
+        .preview-img {
+            max-width: 150px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="text-center">Panel de Administración Bee Bright</h1>
+            <button id="logout-btn" class="btn btn-danger">Cerrar Sesión</button>
+        </div>
+
+
+        <!-- ✅ Carrusel -->
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">Carrusel</div>
+            <div class="card-body">
+                <h5>Slide 1</h5>
+                <input type="text" id="carousel-title-1" class="form-control mb-2" placeholder="Título Slide 1">
+                <textarea id="carousel-desc-1" class="form-control mb-2" rows="2"
+                    placeholder="Descripción Slide 1"></textarea>
+                <input type="file" id="carousel-img-1" class="form-control mb-2">
+                <img id="carousel-preview-1" class="preview-img">
+
+                <hr>
+
+                <h5>Slide 2</h5>
+                <input type="text" id="carousel-title-2" class="form-control mb-2" placeholder="Título Slide 2">
+                <textarea id="carousel-desc-2" class="form-control mb-2" rows="2"
+                    placeholder="Descripción Slide 2"></textarea>
+                <input type="file" id="carousel-img-2" class="form-control mb-2">
+                <img id="carousel-preview-2" class="preview-img">
+            </div>
+        </div>
+
+        <!-- ✅ Sobre Nosotros -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">Sobre Nosotros</div>
+            <div class="card-body">
+                <textarea id="sobre-nosotros" class="form-control" rows="3"
+                    placeholder="Texto Sobre Nosotros"></textarea>
+            </div>
+        </div>
+
+        <!-- ✅ Misión -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">Nuestra Misión</div>
+            <div class="card-body">
+                <textarea id="mision-text" class="form-control mb-2" rows="2" placeholder="Texto Misión"></textarea>
+                <input type="file" id="mision-img" class="form-control mb-2">
+                <img id="mision-preview" class="preview-img">
+            </div>
+        </div>
+
+        <!-- ✅ Visión -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">Nuestra Visión</div>
+            <div class="card-body">
+                <textarea id="vision-text" class="form-control mb-2" rows="2" placeholder="Texto Visión"></textarea>
+                <input type="file" id="vision-img" class="form-control mb-2">
+                <img id="vision-preview" class="preview-img">
+            </div>
+        </div>
+
+        <!-- ✅ Programas -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning">Programas Educativos</div>
+            <div class="card-body">
+                <textarea id="programas-text" class="form-control mb-3" rows="2"
+                    placeholder="Texto general Programas"></textarea>
+
+                <label class="fw-bold">Bee Babies</label>
+                <input type="file" id="bee-babies-img" class="form-control mb-2">
+                <img id="bee-babies-preview" class="preview-img">
+
+                <label class="fw-bold mt-3">Todds Bee</label>
+                <input type="file" id="todds-bee-img" class="form-control mb-2">
+                <img id="todds-bee-preview" class="preview-img">
+            </div>
+        </div>
+
+        <button id="guardar-btn" class="btn btn-primary w-100 py-3">Guardar Cambios</button>
+    </div>
+
+    <script>
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => { document.getElementById(previewId).src = reader.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Asignar previsualización a inputs
+        ['carousel-img-1', 'carousel-img-2', 'mision-img', 'vision-img', 'bee-babies-img', 'todds-bee-img'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => previewImage(document.getElementById(id), id.replace('img', 'preview')));
+        });
+
+        document.getElementById("guardar-btn").addEventListener("click", async () => {
+            const uploadImage = async (fileInput) => {
+                const file = fileInput.files[0];
+                if (!file) return null;
+                const formData = new FormData();
+                formData.append("imagen", file);
+                const res = await fetch("https://bee-bright-backend.onrender.com/api/upload-image", { method: "POST", body: formData });
+                const json = await res.json();
+                return json.url;
+            };
+
+            const rawData = {
+                carousel: [
+                    {
+                        titulo: document.getElementById("carousel-title-1").value,
+                        descripcion: document.getElementById("carousel-desc-1").value,
+                        imagen: await uploadImage(document.getElementById("carousel-img-1"))
+                    },
+                    {
+                        titulo: document.getElementById("carousel-title-2").value,
+                        descripcion: document.getElementById("carousel-desc-2").value,
+                        imagen: await uploadImage(document.getElementById("carousel-img-2"))
+                    }
+                ],
+                sobreNosotros: document.getElementById("sobre-nosotros").value,
+                mision: document.getElementById("mision-text").value,
+                misionImg: await uploadImage(document.getElementById("mision-img")),
+                vision: document.getElementById("vision-text").value,
+                visionImg: await uploadImage(document.getElementById("vision-img")),
+                programas: document.getElementById("programas-text").value,
+                beeBabiesImg: await uploadImage(document.getElementById("bee-babies-img")),
+                toddsBeeImg: await uploadImage(document.getElementById("todds-bee-img"))
+            };
+
+            // ✅ Filtrar solo campos con valor (no sobrescribir vacíos)
+            const cleanData = (obj) => {
+                const newObj = {};
+                for (const key in obj) {
+                    if (Array.isArray(obj[key])) {
+                        const filteredArray = obj[key].map(item => {
+                            const cleanItem = {};
+                            for (const k in item) if (item[k]) cleanItem[k] = item[k];
+                            return cleanItem;
+                        });
+                        newObj[key] = filteredArray;
+                    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        const subObj = {};
+                        for (const subKey in obj[key]) if (obj[key][subKey]) subObj[subKey] = obj[key][subKey];
+                        if (Object.keys(subObj).length > 0) newObj[key] = subObj;
+                    } else if (obj[key]) {
+                        newObj[key] = obj[key];
+                    }
+                }
+                return newObj;
+            };
+
+            const data = cleanData(rawData);
+
+            await fetch("https://bee-bright-backend.onrender.com/api/update-section", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            alert("Contenido actualizado correctamente");
+        });
+    </script>
+    <script>
+        document.getElementById("logout-btn").addEventListener("click", async () => {
+            await fetch("https://bee-bright-backend.onrender.com/api/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+            window.location.href = "index.html"; 
+        });
+    </script>
+
+</body>
+
+</html>
